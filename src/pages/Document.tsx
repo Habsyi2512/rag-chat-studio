@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { cmsFetch } from "@/lib/cms";
-import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
 import { Plus, Upload, Loader2 } from "lucide-react";
