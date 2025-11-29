@@ -14,12 +14,7 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // Check authentication
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        navigate("/login");
-      }
-    });
+    // Check authentication handled by layout
 
     // Fetch stats
     const fetchStats = async () => {

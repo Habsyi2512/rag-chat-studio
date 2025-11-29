@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
@@ -35,15 +36,11 @@ const FAQ = () => {
   }, []);
 
   const fetchFaqs = async () => {
-    const { data, error } = await supabase
-      .from("faqs")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error("Gagal memuat FAQ");
-    } else {
-      setFaqs(data || []);
+    try {
+      const response = await cmsFetch("/faqs");
+      setFaqs(response.data || []);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -53,31 +50,24 @@ const FAQ = () => {
       return;
     }
 
-    if (editingFaq) {
-      const { error } = await supabase
-        .from("faqs")
-        .update({ question, answer })
-        .eq("id", editingFaq.id);
-
-      if (error) {
-        toast.error("Gagal mengupdate FAQ");
-      } else {
+    try {
+      if (editingFaq) {
+        await cmsFetch(`/faqs/${editingFaq.id}`, {
+          method: "PUT",
+          body: JSON.stringify({ question, answer }),
+        });
         toast.success("FAQ berhasil diupdate");
-        fetchFaqs();
-        handleClose();
-      }
-    } else {
-      const { error } = await supabase
-        .from("faqs")
-        .insert([{ question, answer }]);
-
-      if (error) {
-        toast.error("Gagal menambah FAQ");
       } else {
+        await cmsFetch("/faqs", {
+          method: "POST",
+          body: JSON.stringify({ question, answer }),
+        });
         toast.success("FAQ berhasil ditambahkan");
-        fetchFaqs();
-        handleClose();
       }
+      fetchFaqs();
+      handleClose();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -91,13 +81,14 @@ const FAQ = () => {
   const handleDelete = async (faq: FAQ) => {
     if (!confirm("Yakin ingin menghapus FAQ ini?")) return;
 
-    const { error } = await supabase.from("faqs").delete().eq("id", faq.id);
-
-    if (error) {
-      toast.error("Gagal menghapus FAQ");
-    } else {
+    try {
+      await cmsFetch(`/faqs/${faq.id}`, {
+        method: "DELETE",
+      });
       toast.success("FAQ berhasil dihapus");
       fetchFaqs();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 

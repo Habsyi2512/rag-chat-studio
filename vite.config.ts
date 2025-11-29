@@ -15,6 +15,11 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
+      "/cms-api": {
+        target: "http://localhost:8000/api",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/cms-api/, ""),
+      },
     },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),

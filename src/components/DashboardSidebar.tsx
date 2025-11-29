@@ -30,10 +30,22 @@ export const DashboardSidebar = () => {
   const collapsed = state === "collapsed";
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Gagal logout");
-    } else {
+    try {
+      const token = localStorage.getItem("token");
+      if (token) {
+        await fetch("/cms-api/logout", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Accept": "application/json",
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Logout error", error);
+    } finally {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
       toast.success("Berhasil logout");
       navigate("/login");
     }

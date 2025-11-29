@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Copy, Check } from "lucide-react";
+import { Send, Loader2, Copy, Check, CreditCard, Users, FileText, MapPin } from "lucide-react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -13,7 +14,7 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   timestamp: Date;
-  responseTime?: number; // in seconds
+  responseTime?: number;
 }
 
 export const ChatInterface = () => {
@@ -29,13 +30,21 @@ export const ChatInterface = () => {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const quickChatOptions = [
+    { icon: CreditCard, label: "Buat KTP", message: "Apa syarat pembuatan KTP?" },
+    { icon: Users, label: "Kartu Keluarga", message: "Bagaimana cara mengurus Kartu Keluarga?" },
+    { icon: FileText, label: "Akta Kelahiran", message: "Berapa lama proses pembuatan Akta Kelahiran?" },
+    { icon: MapPin, label: "Lokasi Kantor", message: "Dimana lokasi kantor Disdukcapil?" }
+  ];
+
+  const handleSend = async (text?: string) => {
+    const content = typeof text === "string" ? text : input;
+    if (!content.trim() || isLoading) return;
 
     const startTime = Date.now();
     const userMessage: Message = {
       role: "user",
-      content: input,
+      content: content,
       timestamp: new Date()
     };
     setMessages((prev) => [...prev, userMessage]);
@@ -85,10 +94,35 @@ export const ChatInterface = () => {
     <div className={`flex flex-col ${messages.length == 0 ? "my-[200px]" : "h-full"}`}>
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="space-y-4 mx-auto max-w-3xl pb-4">
-          <div>
-            <GradientText className="lg:text-3xl text-xl text-center font-bold">Disdukcapil Kepulauan Anambas</GradientText>
-            <GradientText className="lg:text-3xl text-xl text-center font-bold">Ada yang bisa saya bantu?</GradientText>
-          </div>
+
+          {messages.length == 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="flex flex-col items-center gap-8 mt-8"
+            >
+              <div>
+                <GradientText className="lg:text-3xl text-xl text-center font-bold">Disdukcapil Kepulauan Anambas</GradientText>
+                <GradientText className="lg:text-3xl text-xl text-center font-bold">Ada yang bisa saya bantu?</GradientText>
+              </div>
+
+              <div className="flex flex-wrap gap-2 justify-center w-full max-w-2xl px-4">
+                {quickChatOptions.map((option, index) => (
+                  <motion.button
+                    key={index}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="flex items-center gap-2 px-4 py-2.5 bg-card border border-primary/50 hover:border-primary rounded-full text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-sm"
+                    onClick={() => handleSend(option.message)}
+                  >
+                    <option.icon size={16} />
+                    <span className="whitespace-nowrap">{option.label}</span>
+                  </motion.button>
+                ))}
+              </div>
+            </motion.div>
+          )}
           {messages.map((message, index) => (
             <div
               key={index}
@@ -155,7 +189,7 @@ export const ChatInterface = () => {
             disabled={isLoading}
           />
           <Button
-            onClick={handleSend}
+            onClick={() => handleSend()}
             disabled={isLoading || !input.trim()}
             size="icon"
             className="rounded-full"

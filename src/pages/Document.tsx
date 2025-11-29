@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
@@ -34,15 +35,11 @@ const Document = () => {
   }, []);
 
   const fetchDocuments = async () => {
-    const { data, error } = await supabase
-      .from("documents")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error("Gagal memuat dokumen");
-    } else {
-      setDocuments(data || []);
+    try {
+      const response = await cmsFetch("/documents");
+      setDocuments(response.data || []);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -52,36 +49,34 @@ const Document = () => {
       return;
     }
 
-    // For now, we'll just save the file info to database
-    // In production, you'd upload to storage first
-    const { error } = await supabase.from("documents").insert([
-      {
-        file_name: file.name,
-        file_path: `/uploads/${file.name}`,
-        file_size: file.size,
-        file_type: file.type,
-      },
-    ]);
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", file.name);
 
-    if (error) {
-      toast.error("Gagal mengupload dokumen");
-    } else {
+    try {
+      await cmsFetch("/documents", {
+        method: "POST",
+        body: formData,
+      });
       toast.success("Dokumen berhasil diupload");
       fetchDocuments();
       handleClose();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
   const handleDelete = async (doc: Document) => {
     if (!confirm("Yakin ingin menghapus dokumen ini?")) return;
 
-    const { error } = await supabase.from("documents").delete().eq("id", doc.id);
-
-    if (error) {
-      toast.error("Gagal menghapus dokumen");
-    } else {
+    try {
+      await cmsFetch(`/documents/${doc.id}`, {
+        method: "DELETE",
+      });
       toast.success("Dokumen berhasil dihapus");
       fetchDocuments();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 

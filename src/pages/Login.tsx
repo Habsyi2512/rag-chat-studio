@@ -18,19 +18,10 @@ const Login = () => {
 
   useEffect(() => {
     // Check if already logged in
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate("/dashboard");
-      }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session && event === "SIGNED_IN") {
-        navigate("/dashboard");
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/dashboard");
+    }
   }, [navigate]);
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -38,43 +29,42 @@ const Login = () => {
     setIsLoading(true);
 
     if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-          data: {
-            full_name: fullName,
-          },
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Akun berhasil dibuat! Silakan login.");
-        setIsSignUp(false);
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Login berhasil!");
-      }
+      toast.error("Pendaftaran akun admin belum tersedia. Silakan hubungi administrator.");
+      setIsLoading(false);
+      return;
     }
 
-    setIsLoading(false);
+    try {
+      const response = await fetch("/cms-api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Login gagal");
+      }
+
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      toast.success("Login berhasil!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
-      
+
       <div className="relative z-10 w-full max-w-md">
         <div className="backdrop-blur-xl bg-card/60 border border-border/40 rounded-2xl shadow-2xl p-8 space-y-6">
           <div className="text-center space-y-2">
@@ -105,7 +95,7 @@ const Login = () => {
                 />
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <div className="relative">

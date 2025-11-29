@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
@@ -52,15 +53,11 @@ const DocumentTracking = () => {
   }, []);
 
   const fetchTrackings = async () => {
-    const { data, error } = await supabase
-      .from("document_tracking")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      toast.error("Gagal memuat tracking");
-    } else {
-      setTrackings(data || []);
+    try {
+      const response = await cmsFetch("/document-tracking");
+      setTrackings(response.data || []);
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -74,33 +71,27 @@ const DocumentTracking = () => {
       ...formData,
       completed_at:
         formData.status === "completed" ? new Date().toISOString() : null,
+      applicant_name: "Applicant", // Default for now
     };
 
-    if (editingTracking) {
-      const { error } = await supabase
-        .from("document_tracking")
-        .update(dataToSave)
-        .eq("id", editingTracking.id);
-
-      if (error) {
-        toast.error("Gagal mengupdate tracking");
-      } else {
+    try {
+      if (editingTracking) {
+        await cmsFetch(`/document-tracking/${editingTracking.id}`, {
+          method: "PUT",
+          body: JSON.stringify(dataToSave),
+        });
         toast.success("Tracking berhasil diupdate");
-        fetchTrackings();
-        handleClose();
-      }
-    } else {
-      const { error } = await supabase
-        .from("document_tracking")
-        .insert([dataToSave]);
-
-      if (error) {
-        toast.error("Gagal menambah tracking");
       } else {
+        await cmsFetch("/document-tracking", {
+          method: "POST",
+          body: JSON.stringify(dataToSave),
+        });
         toast.success("Tracking berhasil ditambahkan");
-        fetchTrackings();
-        handleClose();
       }
+      fetchTrackings();
+      handleClose();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
@@ -119,16 +110,14 @@ const DocumentTracking = () => {
   const handleDelete = async (tracking: Tracking) => {
     if (!confirm("Yakin ingin menghapus tracking ini?")) return;
 
-    const { error } = await supabase
-      .from("document_tracking")
-      .delete()
-      .eq("id", tracking.id);
-
-    if (error) {
-      toast.error("Gagal menghapus tracking");
-    } else {
+    try {
+      await cmsFetch(`/document-tracking/${tracking.id}`, {
+        method: "DELETE",
+      });
       toast.success("Tracking berhasil dihapus");
       fetchTrackings();
+    } catch (error: any) {
+      toast.error(error.message);
     }
   };
 
