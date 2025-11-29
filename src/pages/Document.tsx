@@ -3,7 +3,7 @@ import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -29,17 +29,31 @@ const Document = () => {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     fetchDocuments();
   }, []);
 
   const fetchDocuments = async () => {
+    setIsFetching(true);
     try {
       const response = await cmsFetch("/documents");
-      setDocuments(response.data || []);
+      const mappedData = (response.data || []).map((doc: any) => ({
+        id: doc.id,
+        file_name: doc.title || doc.metadata?.original_name || "Untitled",
+        file_path: doc.source_path,
+        file_size: doc.metadata?.size || 0,
+        file_type: "PDF",
+        created_at: doc.created_at,
+        updated_at: doc.updated_at,
+      }));
+      setDocuments(mappedData);
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -49,6 +63,7 @@ const Document = () => {
       return;
     }
 
+    setIsUploading(true);
     const formData = new FormData();
     formData.append("file", file);
     formData.append("title", file.name);
@@ -63,6 +78,8 @@ const Document = () => {
       handleClose();
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -151,9 +168,18 @@ const Document = () => {
                 <Button variant="outline" onClick={handleClose}>
                   Batal
                 </Button>
-                <Button onClick={handleUpload} disabled={!file}>
-                  <Upload className="h-4 w-4 mr-2" />
-                  Upload
+                <Button onClick={handleUpload} disabled={!file || isUploading}>
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Upload
+                    </>
+                  )}
                 </Button>
               </div>
             </div>
@@ -166,6 +192,7 @@ const Document = () => {
         columns={columns}
         onDelete={handleDelete}
         searchPlaceholder="Cari dokumen..."
+        isLoading={isFetching}
       />
     </div>
   );

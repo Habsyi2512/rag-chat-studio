@@ -3,7 +3,7 @@ import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -47,17 +47,22 @@ const DocumentTracking = () => {
     note: "",
     estimated_completion_date: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
     fetchTrackings();
   }, []);
 
   const fetchTrackings = async () => {
+    setIsFetching(true);
     try {
       const response = await cmsFetch("/document-tracking");
       setTrackings(response.data || []);
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -67,6 +72,7 @@ const DocumentTracking = () => {
       return;
     }
 
+    setIsLoading(true);
     const dataToSave = {
       ...formData,
       completed_at:
@@ -92,6 +98,8 @@ const DocumentTracking = () => {
       handleClose();
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -261,7 +269,16 @@ const DocumentTracking = () => {
                 <Button variant="outline" onClick={handleClose}>
                   Batal
                 </Button>
-                <Button onClick={handleSave}>Simpan</Button>
+                <Button onClick={handleSave} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -274,6 +291,7 @@ const DocumentTracking = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         searchPlaceholder="Cari tracking..."
+        isLoading={isFetching}
       />
     </div>
   );

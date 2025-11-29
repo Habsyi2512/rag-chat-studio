@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Edit, Trash2 } from "lucide-react";
+import { Search, Edit, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 
 interface Column<T> {
   key: keyof T | string;
@@ -24,6 +24,10 @@ interface DataTableProps<T> {
   onDelete?: (item: T) => void;
   searchPlaceholder?: string;
   onSearch?: (query: string) => void;
+  currentPage?: number;
+  totalPages?: number;
+  onPageChange?: (page: number) => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -33,6 +37,10 @@ export function DataTable<T extends { id: string }>({
   onDelete,
   searchPlaceholder = "Cari...",
   onSearch,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
+  isLoading = false,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -65,7 +73,19 @@ export function DataTable<T extends { id: string }>({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.length === 0 ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length + 1}
+                  className="h-24 text-center"
+                >
+                  <div className="flex justify-center items-center gap-2 text-muted-foreground">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <span>Memuat data...</span>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : data.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length + 1}
@@ -81,7 +101,7 @@ export function DataTable<T extends { id: string }>({
                     const value = column.key.toString().includes(".")
                       ? column.key.toString().split(".").reduce((obj, key) => obj?.[key], item as any)
                       : item[column.key as keyof T];
-                    
+
                     return (
                       <TableCell key={String(column.key)}>
                         {column.render ? column.render(value, item) : String(value || "-")}
@@ -118,6 +138,33 @@ export function DataTable<T extends { id: string }>({
           </TableBody>
         </Table>
       </div>
-    </div>
+
+
+      {
+        totalPages > 1 && (
+          <div className="flex items-center justify-end space-x-2 py-4">
+            <div className="text-sm text-muted-foreground">
+              Halaman {currentPage} dari {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage - 1)}
+              disabled={currentPage <= 1}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange?.(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        )
+      }
+    </div >
   );
 }

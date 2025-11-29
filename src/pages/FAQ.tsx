@@ -3,7 +3,7 @@ import { cmsFetch } from "@/lib/cms";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/DataTable";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -30,17 +30,25 @@ const FAQ = () => {
   const [editingFaq, setEditingFaq] = useState<FAQ | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
 
   useEffect(() => {
-    fetchFaqs();
-  }, []);
+    fetchFaqs(currentPage);
+  }, [currentPage]);
 
-  const fetchFaqs = async () => {
+  const fetchFaqs = async (page: number) => {
+    setIsFetching(true);
     try {
-      const response = await cmsFetch("/faqs");
+      const response = await cmsFetch(`/faqs?page=${page}`);
       setFaqs(response.data || []);
+      setTotalPages(response.last_page || 1);
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsFetching(false);
     }
   };
 
@@ -50,6 +58,7 @@ const FAQ = () => {
       return;
     }
 
+    setIsLoading(true);
     try {
       if (editingFaq) {
         await cmsFetch(`/faqs/${editingFaq.id}`, {
@@ -64,10 +73,12 @@ const FAQ = () => {
         });
         toast.success("FAQ berhasil ditambahkan");
       }
-      fetchFaqs();
+      fetchFaqs(currentPage);
       handleClose();
     } catch (error: any) {
       toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -86,7 +97,7 @@ const FAQ = () => {
         method: "DELETE",
       });
       toast.success("FAQ berhasil dihapus");
-      fetchFaqs();
+      fetchFaqs(currentPage);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -153,7 +164,16 @@ const FAQ = () => {
                 <Button variant="outline" onClick={handleClose}>
                   Batal
                 </Button>
-                <Button onClick={handleSave}>Simpan</Button>
+                <Button onClick={handleSave} disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    "Simpan"
+                  )}
+                </Button>
               </div>
             </div>
           </DialogContent>
@@ -166,6 +186,10 @@ const FAQ = () => {
         onEdit={handleEdit}
         onDelete={handleDelete}
         searchPlaceholder="Cari FAQ..."
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+        isLoading={isFetching}
       />
     </div>
   );

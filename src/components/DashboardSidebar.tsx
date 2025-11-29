@@ -83,9 +83,9 @@ export const DashboardSidebar = () => {
           <Button
             onClick={handleLogout}
             variant="outline"
-            className="w-full"
+            className={`w-full ${collapsed ? "justify-center px-2" : "justify-start"}`}
           >
-            <LogOut className="h-4 w-4 mr-2" />
+            <LogOut className={`h-4 w-4 ${collapsed ? "" : "mr-2"}`} />
             {!collapsed && "Logout"}
           </Button>
         </div>
