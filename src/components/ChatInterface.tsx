@@ -134,7 +134,7 @@ export const ChatInterface = () => {
                   "prose prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
                   message.role === "user"
                     ? "bg-primary rounded-b-3xl rounded-tl-3xl rounded-tr-[3px] text-primary-foreground prose-invert dark:prose"
-                    : "bg-card/60 prose-neutral dark:prose-invert rounded-b-3xl rounded-tr-3xl rounded-tl-[3px]"
+                    : "rounded-b-3xl rounded-tr-3xl rounded-tl-[3px]"
                 )}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
