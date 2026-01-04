@@ -28,6 +28,7 @@ interface DataTableProps<T> {
   totalPages?: number;
   onPageChange?: (page: number) => void;
   isLoading?: boolean;
+  itemsPerPage?: number;
 }
 
 export function DataTable<T extends { id: string }>({
@@ -41,6 +42,7 @@ export function DataTable<T extends { id: string }>({
   totalPages = 1,
   onPageChange,
   isLoading = false,
+  itemsPerPage = 10,
 }: DataTableProps<T>) {
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -66,6 +68,7 @@ export function DataTable<T extends { id: string }>({
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/30">
+              <TableHead className="w-12">No</TableHead>
               {columns.map((column) => (
                 <TableHead key={String(column.key)}>{column.label}</TableHead>
               ))}
@@ -76,7 +79,7 @@ export function DataTable<T extends { id: string }>({
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length + 1}
+                  colSpan={columns.length + 2}
                   className="h-24 text-center"
                 >
                   <div className="flex justify-center items-center gap-2 text-muted-foreground">
@@ -88,15 +91,18 @@ export function DataTable<T extends { id: string }>({
             ) : data.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length + 1}
+                  colSpan={columns.length + 2}
                   className="text-center text-muted-foreground py-8"
                 >
                   Tidak ada data
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((item) => (
+              data.map((item, index) => (
                 <TableRow key={item.id} className="hover:bg-muted/20">
+                  <TableCell className="font-medium">
+                    {(currentPage - 1) * itemsPerPage + index + 1}
+                  </TableCell>
                   {columns.map((column) => {
                     const value = column.key.toString().includes(".")
                       ? column.key.toString().split(".").reduce((obj, key) => obj?.[key], item as any)

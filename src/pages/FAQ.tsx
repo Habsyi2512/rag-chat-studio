@@ -35,14 +35,20 @@ const FAQ = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
-  useEffect(() => {
-    fetchFaqs(currentPage);
-  }, [currentPage]);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const fetchFaqs = async (page: number) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchFaqs(currentPage, searchQuery);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [currentPage, searchQuery]);
+
+  const fetchFaqs = async (page: number, search: string = "") => {
     setIsFetching(true);
     try {
-      const response = await cmsFetch(`/faqs?page=${page}`);
+      const query = search ? `&search=${encodeURIComponent(search)}` : "";
+      const response = await cmsFetch(`/faqs?page=${page}${query}`);
       setFaqs(response.data || []);
       setTotalPages(response.last_page || 1);
     } catch (error: any) {
@@ -73,7 +79,7 @@ const FAQ = () => {
         });
         toast.success("FAQ berhasil ditambahkan");
       }
-      fetchFaqs(currentPage);
+      fetchFaqs(currentPage, searchQuery);
       handleClose();
     } catch (error: any) {
       toast.error(error.message);
@@ -97,7 +103,7 @@ const FAQ = () => {
         method: "DELETE",
       });
       toast.success("FAQ berhasil dihapus");
-      fetchFaqs(currentPage);
+      fetchFaqs(currentPage, searchQuery);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -190,6 +196,10 @@ const FAQ = () => {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
         isLoading={isFetching}
+        onSearch={(query) => {
+          setSearchQuery(query);
+          setCurrentPage(1);
+        }}
       />
     </div>
   );

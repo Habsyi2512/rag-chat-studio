@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { cmsFetch } from "@/lib/cms";
-import { supabase } from "@/integrations/supabase/client";
 import { StatsCard } from "@/components/StatsCard";
+import { ChatStatsChart } from "@/components/ChatStatsChart";
 import { MessageCircle, FileText, FileCheck, Activity } from "lucide-react";
 
 const Dashboard = () => {
@@ -16,9 +16,6 @@ const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check authentication handled by layout
-
-    // Fetch stats
     const fetchStats = async () => {
       setIsLoading(true);
       try {
@@ -75,6 +72,10 @@ const Dashboard = () => {
           description="Total pesan chat"
           isLoading={isLoading}
         />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <ChatStatsChart />
       </div>
     </div>
   );

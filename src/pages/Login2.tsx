@@ -1,0 +1,118 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+
+const Login = () => {
+    const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [fullName, setFullName] = useState("");
+
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (token) {
+            navigate("/dashboard");
+        }
+    }, [navigate]);
+
+    const handleAuth = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+
+        try {
+            const response = await fetch("/cms-api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ email, password }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || "Login gagal");
+            }
+
+            localStorage.setItem("token", data.access_token);
+            localStorage.setItem("user", JSON.stringify(data.user));
+            toast.success("Login berhasil!");
+            navigate("/dashboard");
+        } catch (error: any) {
+            toast.error(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 flex items-center justify-center p-4 relative overflow-hidden">
+            <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
+            <div className="relative z-10 w-full max-w-md">
+                <div className="backdrop-blur-xl bg-card/60 border border-border/40 rounded-2xl shadow-2xl p-8 space-y-6">
+                    <div className="text-center space-y-2">
+                        <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                            <Lock className="h-6 w-6 text-primary" />
+                        </div>
+                        <h1 className="text-2xl font-bold">Login Admin</h1>
+                        <p className="text-sm text-muted-foreground">Masuk untuk mengakses dashboard</p>
+                    </div>
+                    <form onSubmit={handleAuth} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="fullName">Nama Lengkap</Label>
+                            <Input
+                                id="fullName"
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                required
+                                className="bg-background/50"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="admin@example.com"
+                                    required
+                                    className="pl-9 bg-background/50"
+                                />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="password">Password</Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input id="password" type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" required className="pl-9 pr-9 bg-background/50" />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                                    {showPassword ? (
+                                        <EyeOff className="h-4 w-4" />
+                                    ) : (
+                                        <Eye className="h-4 w-4" />
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                        <Button type="submit" className="w-full" disabled={isLoading}>
+                            {isLoading ? "Loading..." : "Login"}
+                        </Button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default Login;

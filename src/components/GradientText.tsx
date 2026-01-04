@@ -12,7 +12,7 @@ interface GradientTextProps {
 export default function GradientText({
   children,
   className = '',
-  colors = ['#E8550C', '#B32400', '#FFB444', '#B32400', '#E8550C'],
+  colors = ["#00ccff", "#009a00", "#00ccff", "#0066ff"],
   animationSpeed = 8,
   showBorder = false
 }: GradientTextProps) {
@@ -22,9 +22,9 @@ export default function GradientText({
   };
 
   return (
-    <div className={`animated-gradient-text ${className}`}>
+    <div className={`animated-gradient-text mb-2 ${className}`}>
       {showBorder && <div className="gradient-overlay" style={gradientStyle}></div>}
-      <div className="text-content p-1" style={gradientStyle}>
+      <div className={`text-content p-2 ${showBorder ? 'backdrop-blur-sm' : ''}`} style={gradientStyle}>
         {children}
       </div>
     </div>

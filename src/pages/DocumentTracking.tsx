@@ -28,7 +28,7 @@ interface Tracking {
   id: string;
   tracking_number: string;
   document_type: string;
-  status: "pending" | "processing" | "completed" | "rejected";
+  status: "Verifikasi Berkas (Front Office)" | "Menunggu Verifikasi Pusat" | "Sedang Diproses (Operator)" | "Menunggu TTE (Tanda Tangan Elektronik)" | "Dokumen Terbit / Siap Cetak" | "Siap Diambil";
   note: string | null;
   estimated_completion_date: string | null;
   completed_at: string | null;
@@ -43,27 +43,46 @@ const DocumentTracking = () => {
   const [formData, setFormData] = useState({
     tracking_number: "",
     document_type: "",
-    status: "pending" as Tracking["status"],
+    status: "Verifikasi Berkas (Front Office)" as Tracking["status"],
     note: "",
     estimated_completion_date: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
-    fetchTrackings();
+    fetchTrackings(1, "");
   }, []);
 
-  const fetchTrackings = async () => {
+  const fetchTrackings = async (page: number, query: string) => {
     setIsFetching(true);
     try {
-      const response = await cmsFetch("/document-tracking");
+      const queryParams = new URLSearchParams();
+      queryParams.append("page", page.toString());
+      if (query) queryParams.append("search", query);
+
+      const response = await cmsFetch(`/document-tracking?${queryParams.toString()}`);
       setTrackings(response.data || []);
+      setCurrentPage(response.current_page);
+      setTotalPages(response.last_page);
     } catch (error: any) {
       toast.error(error.message);
     } finally {
       setIsFetching(false);
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    fetchTrackings(page, searchQuery);
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    fetchTrackings(1, query);
   };
 
   const handleSave = async () => {
@@ -76,7 +95,7 @@ const DocumentTracking = () => {
     const dataToSave = {
       ...formData,
       completed_at:
-        formData.status === "completed" ? new Date().toISOString() : null,
+        formData.status === "Siap Diambil" ? new Date().toISOString() : null,
       applicant_name: "Applicant", // Default for now
     };
 
@@ -94,7 +113,7 @@ const DocumentTracking = () => {
         });
         toast.success("Tracking berhasil ditambahkan");
       }
-      fetchTrackings();
+      fetchTrackings(currentPage, searchQuery);
       handleClose();
     } catch (error: any) {
       toast.error(error.message);
@@ -123,7 +142,7 @@ const DocumentTracking = () => {
         method: "DELETE",
       });
       toast.success("Tracking berhasil dihapus");
-      fetchTrackings();
+      fetchTrackings(currentPage, searchQuery);
     } catch (error: any) {
       toast.error(error.message);
     }
@@ -135,23 +154,25 @@ const DocumentTracking = () => {
     setFormData({
       tracking_number: "",
       document_type: "",
-      status: "pending",
+      status: "Verifikasi Berkas (Front Office)",
       note: "",
       estimated_completion_date: "",
     });
   };
 
   const getStatusBadge = (status: string) => {
-    const variants: Record<string, "default" | "secondary" | "destructive"> = {
-      pending: "secondary",
-      processing: "default",
-      completed: "default",
-      rejected: "destructive",
+    const styles: Record<string, string> = {
+      "Verifikasi Berkas (Front Office)": "bg-blue-100 text-blue-800 hover:bg-blue-200",
+      "Menunggu Verifikasi Pusat": "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+      "Sedang Diproses (Operator)": "bg-purple-100 text-purple-800 hover:bg-purple-200",
+      "Menunggu TTE (Tanda Tangan Elektronik)": "bg-orange-100 text-orange-800 hover:bg-orange-200",
+      "Dokumen Terbit / Siap Cetak": "bg-indigo-100 text-indigo-800 hover:bg-indigo-200",
+      "Siap Diambil": "bg-green-100 text-green-800 hover:bg-green-200",
     };
 
     return (
-      <Badge variant={variants[status] || "default"}>
-        {status.toUpperCase()}
+      <Badge className={styles[status] || "bg-gray-100 text-gray-800"}>
+        {status}
       </Badge>
     );
   };
@@ -209,14 +230,27 @@ const DocumentTracking = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="document_type">Tipe Dokumen</Label>
-                <Input
-                  id="document_type"
+                <Select
                   value={formData.document_type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, document_type: e.target.value })
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, document_type: value })
                   }
-                  placeholder="KTP, Surat, dll"
-                />
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Pilih tipe dokumen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Kartu Keluarga (KK)">Kartu Keluarga (KK)</SelectItem>
+                    <SelectItem value="KTP Elektronik (KTP-el)">KTP Elektronik (KTP-el)</SelectItem>
+                    <SelectItem value="Surat Keterangan Pindah WNI (SKPWNI)">Surat Keterangan Pindah WNI (SKPWNI)</SelectItem>
+                    <SelectItem value="Pencatatan Biodata WNI">Pencatatan Biodata WNI</SelectItem>
+                    <SelectItem value="Kartu Identitas Anak (KIA)">Kartu Identitas Anak (KIA)</SelectItem>
+                    <SelectItem value="Akta Kelahiran">Akta Kelahiran</SelectItem>
+                    <SelectItem value="Akta Kematian">Akta Kematian</SelectItem>
+                    <SelectItem value="Akta Perceraian">Akta Perceraian</SelectItem>
+                    <SelectItem value="Akta Perkawinan">Akta Perkawinan</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
@@ -230,10 +264,12 @@ const DocumentTracking = () => {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="Verifikasi Berkas (Front Office)">Verifikasi Berkas (Front Office)</SelectItem>
+                    <SelectItem value="Menunggu Verifikasi Pusat">Menunggu Verifikasi Pusat</SelectItem>
+                    <SelectItem value="Sedang Diproses (Operator)">Sedang Diproses (Operator)</SelectItem>
+                    <SelectItem value="Menunggu TTE (Tanda Tangan Elektronik)">Menunggu TTE (Tanda Tangan Elektronik)</SelectItem>
+                    <SelectItem value="Dokumen Terbit / Siap Cetak">Dokumen Terbit / Siap Cetak</SelectItem>
+                    <SelectItem value="Siap Diambil">Siap Diambil</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -292,6 +328,10 @@ const DocumentTracking = () => {
         onDelete={handleDelete}
         searchPlaceholder="Cari tracking..."
         isLoading={isFetching}
+        onSearch={handleSearch}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={handlePageChange}
       />
     </div>
   );

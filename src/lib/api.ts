@@ -6,30 +6,31 @@ export interface ChatResponse {
 
 export const sendMessage = async (
   message: string,
+  history: Array<{ role: string; content: string }> = [],
   userId?: string
 ): Promise<ChatResponse> => {
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
-  const apiKey = import.meta.env.VITE_API_KEY;
+  // Use the CMS API (Laravel) which acts as a proxy and logger
+  // Assuming /cms-api is the prefix for Laravel API as seen in cms.ts
+  const baseUrl = "/cms-api";
 
-  if (!baseUrl) {
-    throw new Error("VITE_API_BASE_URL is not defined");
-  }
-
-  const response = await fetch(`${baseUrl}/chat/`, {
+  const response = await fetch(`${baseUrl}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
+      // No API key needed for the public Laravel endpoint, 
+      // or if needed, it should be a public key. 
+      // For now, assuming no auth required for public chat as per api.php
     },
     body: JSON.stringify({
       message,
       user_id: userId,
+      history,
     }),
   });
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || "Network response was not ok");
+    throw new Error(errorData.message || "Network response was not ok");
   }
 
   return response.json();

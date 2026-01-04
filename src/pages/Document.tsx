@@ -31,6 +31,8 @@ const Document = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   useEffect(() => {
     fetchDocuments();
   }, []);
@@ -55,6 +57,10 @@ const Document = () => {
       setIsFetching(false);
     }
   };
+
+  const filteredDocuments = documents.filter((doc) =>
+    doc.file_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleUpload = async () => {
     if (!file) {
@@ -187,11 +193,12 @@ const Document = () => {
       </div>
 
       <DataTable
-        data={documents}
+        data={filteredDocuments}
         columns={columns}
         onDelete={handleDelete}
         searchPlaceholder="Cari dokumen..."
         isLoading={isFetching}
+        onSearch={setSearchQuery}
       />
     </div>
   );

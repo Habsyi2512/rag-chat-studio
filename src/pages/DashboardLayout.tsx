@@ -3,7 +3,6 @@ import { Outlet, useNavigate } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/DashboardSidebar";
 import { NotificationDropdown } from "@/components/NotificationDropdown";
-import { supabase } from "@/integrations/supabase/client";
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
