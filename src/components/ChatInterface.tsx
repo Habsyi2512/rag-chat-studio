@@ -40,9 +40,9 @@ export const ChatInterface = () => {
 
   const quickChatOptions = [
     { icon: CreditCard, label: "Syarat buat KTP", message: "Apa syarat pembuatan KTP?" },
-    { icon: Users, label: "Kartu Keluarga", message: "Bagaimana cara mengurus Kartu Keluarga?" },
-    { icon: FileText, label: "Akta Kelahiran", message: "Berapa lama proses pembuatan Akta Kelahiran?" },
-    { icon: MapPin, label: "Lokasi Kantor", message: "Dimana lokasi kantor Disdukcapil?" }
+    { icon: Users, label: "Kartu Keluarga", message: "Apa syarat Kartu Keluarga yang baru?" },
+    { icon: FileText, label: "Akta Kelahiran", message: "Bagaimana prosedur membuat akta kelahiran" },
+    { icon: MapPin, label: "Lokasi Kantor", message: "Dimana lokasi kantor Disdukcapil Anambas?" }
   ];
 
   const handleSend = async (text?: string) => {
