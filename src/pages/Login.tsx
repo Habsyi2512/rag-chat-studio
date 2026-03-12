@@ -35,19 +35,26 @@ const Login = () => {
     }
 
     try {
-      // Mock login since FastAPI uses API keys directly
-      // Accept admin@example.com / admin123 
-      if (email === "admin@example.com" && password === "admin123") {
-         const apiKey = import.meta.env.VITE_API_KEY;
-         if (!apiKey) throw new Error("VITE_API_KEY tidak ditemukan di file .env");
-         
-         localStorage.setItem("token", apiKey);
-         localStorage.setItem("user", JSON.stringify({ name: "Admin FastAPI", email }));
-         toast.success("Login berhasil!");
-         navigate("/dashboard");
-      } else {
-         throw new Error("Login gagal. Gunakan email: admin@example.com dan sandi: admin123");
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Login gagal. Silakan periksa email dan password Anda.");
       }
+
+      const data = await response.json();
+      
+      localStorage.setItem("token", data.access_token);
+      localStorage.setItem("user", JSON.stringify({ name: "Admin", email }));
+      
+      toast.success("Login berhasil!");
+      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message);
     } finally {

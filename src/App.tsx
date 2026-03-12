@@ -12,6 +12,8 @@ import Document from "./pages/Document";
 import DocumentTracking from "./pages/DocumentTracking";
 import NotFound from "./pages/NotFound";
 
+import ProtectedRoute from "./components/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -23,12 +25,16 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="faq" element={<FAQ />} />
-            <Route path="document" element={<Document />} />
-            <Route path="tracking" element={<DocumentTracking />} />
+          
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="faq" element={<FAQ />} />
+              <Route path="document" element={<Document />} />
+              <Route path="tracking" element={<DocumentTracking />} />
+            </Route>
           </Route>
+
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

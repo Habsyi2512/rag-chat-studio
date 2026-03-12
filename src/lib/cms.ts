@@ -19,9 +19,22 @@ export const cmsFetch = async (endpoint: string, options: RequestInit = {}) => {
         },
     });
 
+    if (response.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        throw new Error("Sesi telah berakhir, silakan login kembali.");
+    }
+
     if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Terjadi kesalahan pada server");
+        let errorMessage = "Terjadi kesalahan pada server";
+        try {
+            const errorData = await response.json();
+            errorMessage = errorData.detail || errorData.message || errorMessage;
+        } catch (e) {
+            // If response is not JSON
+        }
+        throw new Error(errorMessage);
     }
 
     return response.json();
