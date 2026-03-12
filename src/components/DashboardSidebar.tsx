@@ -31,16 +31,7 @@ export const DashboardSidebar = () => {
 
   const handleLogout = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (token) {
-        await fetch("/cms-api/logout", {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Accept": "application/json",
-          },
-        });
-      }
+        // Mock logout - clear localStorage without calling API
     } catch (error) {
       console.error("Logout error", error);
     } finally {

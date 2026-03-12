@@ -21,7 +21,7 @@ const Index = () => {
         className="custom-rays absolute h-full inset-0"
       />
       <div className="absolute inset-0 z-0">
-        <img src="/background2.jpg" alt="" className="w-full h-full object-cover opacity-60" />
+        <img src="/background.webp" alt="" className="w-full h-full object-cover opacity-60" />
       </div>
 
       {/* Header */}

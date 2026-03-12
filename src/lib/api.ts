@@ -9,17 +9,14 @@ export const sendMessage = async (
   history: Array<{ role: string; content: string }> = [],
   userId?: string
 ): Promise<ChatResponse> => {
-  // Use the CMS API (Laravel) which acts as a proxy and logger
-  // Assuming /cms-api is the prefix for Laravel API as seen in cms.ts
-  const baseUrl = "/cms-api";
+  // Proxy /api to FastAPI
+  const baseUrl = "/api";
 
   const response = await fetch(`${baseUrl}/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // No API key needed for the public Laravel endpoint, 
-      // or if needed, it should be a public key. 
-      // For now, assuming no auth required for public chat as per api.php
+      "Authorization": `Bearer ${import.meta.env.VITE_API_KEY}`
     },
     body: JSON.stringify({
       message,

@@ -11,12 +11,12 @@ export default defineConfig(({ mode }) => ({
     allowedHosts: true,
     proxy: {
       "/api": {
-        target: "http://localhost:8001",
+        target: "http://localhost:8000",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ""),
       },
       "/cms-api": {
-        target: "http://localhost:8000/api",
+        target: "http://localhost:8000/dashboard",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/cms-api/, ""),
       },

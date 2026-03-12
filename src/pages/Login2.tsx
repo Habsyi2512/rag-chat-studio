@@ -26,25 +26,17 @@ const Login = () => {
         setIsLoading(true);
 
         try {
-            const response = await fetch("/cms-api/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Accept": "application/json",
-                },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || "Login gagal");
+            if (email === "admin@example.com" && password === "admin123") {
+                const apiKey = import.meta.env.VITE_API_KEY;
+                if (!apiKey) throw new Error("VITE_API_KEY tidak ditemukan di file .env");
+                
+                localStorage.setItem("token", apiKey);
+                localStorage.setItem("user", JSON.stringify({ name: "Admin FastAPI", email }));
+                toast.success("Login berhasil!");
+                navigate("/dashboard");
+            } else {
+                throw new Error("Login gagal. Gunakan email: admin@example.com dan sandi: admin123");
             }
-
-            localStorage.setItem("token", data.access_token);
-            localStorage.setItem("user", JSON.stringify(data.user));
-            toast.success("Login berhasil!");
-            navigate("/dashboard");
         } catch (error: any) {
             toast.error(error.message);
         } finally {

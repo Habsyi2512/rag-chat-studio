@@ -41,11 +41,11 @@ export function NotificationDropdown() {
         }
     };
 
-    // Polling every 10 seconds
+    // Disable polling to prevent 404 errors on the new FastAPI backend
     useEffect(() => {
-        fetchNotifications();
-        const interval = setInterval(fetchNotifications, 10000);
-        return () => clearInterval(interval);
+        // fetchNotifications();
+        // const interval = setInterval(fetchNotifications, 10000);
+        // return () => clearInterval(interval);
     }, []);
 
     const handleMarkAsRead = async (id: string) => {
