@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Lock, Mail, Eye, EyeOff } from "lucide-react";
+import SEO from "@/components/SEO";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -64,6 +65,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-accent/20 flex items-center justify-center p-4 relative overflow-hidden">
+      <SEO title="Login Admin - Disdukcapil Anambas" />
       <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
       <div className="relative z-10 w-full max-w-md">

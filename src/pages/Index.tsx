@@ -1,5 +1,6 @@
 import { ChatInterface } from "@/components/ChatInterface";
 import LightRays from "@/components/LightRays";
+import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -7,6 +8,10 @@ import { Link } from "react-router-dom";
 const Index = () => {
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-accent/20 overflow-hidden flex flex-col">
+      <SEO 
+        title="AI Chatbot Disdukcapil Kepulauan Anambas" 
+        description="Layanan informasi otomatis kependudukan dan pencatatan sipil Dinas Kependudukan dan Catatan Sipil Kabupaten Kepulauan Anambas."
+      />
       {/* Background decorative elements */}
       <LightRays
         raysOrigin="top-center"
@@ -28,7 +33,7 @@ const Index = () => {
       <header className="shrink-0 z-50 p-4">
         <div className="max-w-7xl border border-white/20 shadow-sm px-3 py-2 rounded-full backdrop-blur-sm bg-gray-50/50 mx-auto flex justify-between items-center">
           <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            RAG Chatbot
+            Disdukcapil Anambas AI
           </h1>
           <Link to="/login">
             <Button variant="outline" size="sm" className="gap-2 rounded-full">
