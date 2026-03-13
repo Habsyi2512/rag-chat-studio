@@ -154,7 +154,7 @@ export const ChatInterface = () => {
                   onClick={() => handleSend(option.message)}
                 >
                   <option.icon size={16} />
-                  <span className="whitespace-nowrap">{option.label}</span>
+                  <span className="whitespace-nowrap text-xs">{option.label}</span>
                 </button>
               ))}
             </div>

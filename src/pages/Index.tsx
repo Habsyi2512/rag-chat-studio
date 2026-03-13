@@ -8,8 +8,8 @@ import { Link } from "react-router-dom";
 const Index = () => {
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-background via-background to-accent/20 overflow-hidden flex flex-col">
-      <SEO 
-        title="AI Chatbot Disdukcapil Kepulauan Anambas" 
+      <SEO
+        title="AI Chatbot Disdukcapil Kepulauan Anambas"
         description="Layanan informasi otomatis kependudukan dan pencatatan sipil Dinas Kependudukan dan Catatan Sipil Kabupaten Kepulauan Anambas."
       />
       {/* Background decorative elements */}
@@ -32,8 +32,8 @@ const Index = () => {
       {/* Header */}
       <header className="shrink-0 z-50 p-4">
         <div className="max-w-7xl border border-white/20 shadow-sm px-3 py-2 rounded-full backdrop-blur-sm bg-gray-50/50 mx-auto flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
-            Disdukcapil Anambas AI
+          <h1 className="text-md md:text-2xl font-bold bg-gradient-to-r from-primary to-accent-foreground bg-clip-text text-transparent">
+            AI RAG Chatbot
           </h1>
           <Link to="/login">
             <Button variant="outline" size="sm" className="gap-2 rounded-full">
