@@ -178,7 +178,7 @@ export const ChatInterface = ({
             <div className="flex flex-col items-center">
               <GradientText
                 showBorder={false}
-                className="lg:text-4xl text-3xl font-black bg-white/20 backdrop-blur-xl px-8 py-4 rounded-[40px] border border-white/50 shadow-2xl transition-all duration-700"
+                className="lg:text-4xl text-3xl font-black bg-white/20 backdrop-blur-xl px-8 py-2 rounded-[40px] border border-white/50 shadow-2xl transition-all duration-700"
               >
                 Disdukcapil Kepulauan Anambas
               </GradientText>
@@ -209,21 +209,24 @@ export const ChatInterface = ({
                 key={index}
                 className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
-                <div className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm",
-                  message.role === "user" ? "bg-primary text-primary-foreground" : "bg-white/80 text-primary border border-primary/20"
-                )}>
-                  {message.role === "user" ? <UserIcon size={16} /> : <Bot size={16} />}
-                </div>
+                {/* Only show User Avatar, hide Bot Avatar */}
+                {message.role === "user" && (
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm bg-primary text-primary-foreground">
+                    <UserIcon size={16} />
+                  </div>
+                )}
 
-                <div className={`flex flex-col max-w-[85%] lg:max-w-[70%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                <div className={cn(
+                  "flex flex-col max-w-[85%] lg:max-w-[75%]",
+                  message.role === "user" ? "items-end" : "items-start"
+                )}>
                   <div
                     className={cn(
-                      "px-4 py-3 shadow-md relative group transition-all duration-300",
+                      "px-5 py-4 relative group transition-all duration-300",
                       "prose prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
                       message.role === "user"
-                        ? "bg-primary/90 text-primary-foreground rounded-2xl rounded-tr-none border-0 backdrop-blur-md"
-                        : "bg-white/70 text-foreground rounded-2xl rounded-tl-none border border-white/40 backdrop-blur-xl"
+                        ? "bg-primary text-primary-foreground rounded-2xl rounded-tr-none shadow-md"
+                        : "bg-white/20 backdrop-blur-xl text-white font-medium rounded-2xl rounded-tl-none border border-white/30 shadow-lg"
                     )}
                   >
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
@@ -231,8 +234,8 @@ export const ChatInterface = ({
                     </ReactMarkdown>
 
                     <div className={cn(
-                      "flex items-center gap-2 mt-2 pt-2 border-t text-[10px] opacity-60",
-                      message.role === "user" ? "border-white/20" : "border-black/5"
+                      "flex items-center gap-2 mt-2 pt-1 text-[10px] opacity-50",
+                      message.role === "user" ? "text-primary-foreground/80" : "text-white/90"
                     )}>
                       <span>{formatTime(message.timestamp)}</span>
                       {message.responseTime && (
@@ -244,7 +247,7 @@ export const ChatInterface = ({
                         className="hover:scale-110 active:scale-95 transition-transform"
                       >
                         {copiedIndex === index ? (
-                          <Check className="h-3 w-3 text-green-500" />
+                          <Check className="h-3 w-3 text-green-600" />
                         ) : (
                           <Copy className="h-3 w-3" />
                         )}

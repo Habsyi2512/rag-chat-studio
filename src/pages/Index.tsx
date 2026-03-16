@@ -43,8 +43,8 @@ const Index = () => {
         backgroundPosition: 'center',
       }}
     >
-      {/* Dark overlay for readability */}
-      <div className="absolute inset-0 bg-black/40 z-0" />
+      {/* White overlay for brightness */}
+      <div className="absolute inset-0 bg-black/10 z-0" />
       <SEO
         title="AI Chatbot Disdukcapil Kepulauan Anambas"
         description="Layanan informasi otomatis kependudukan dan pencatatan sipil Dinas Kependudukan dan Catatan Sipil Kabupaten Kepulauan Anambas."
