@@ -5,12 +5,12 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import GradientText from "./GradientText";
-import { sendMessage } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api";
+import { Bot, User as UserIcon } from "lucide-react";
 
 interface Message {
   role: "user" | "assistant";
@@ -19,13 +19,26 @@ interface Message {
   responseTime?: number;
 }
 
-export const ChatInterface = () => {
+export const ChatInterface = ({
+  sessionId,
+  onSessionCreated
+}: {
+  sessionId?: string;
+  onSessionCreated?: (id: string) => void
+}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const quickChatOptions = [
+    { icon: CreditCard, label: "Syarat buat KTP", message: "Apa syarat pembuatan KTP?" },
+    { icon: Users, label: "Kartu Keluarga", message: "Apa syarat Kartu Keluarga yang baru?" },
+    { icon: FileText, label: "Akta Kelahiran", message: "Bagaimana prosedur membuat akta kelahiran" },
+    { icon: MapPin, label: "Lokasi Kantor", message: "Dimana lokasi kantor Disdukcapil Anambas?" }
+  ];
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -38,12 +51,31 @@ export const ChatInterface = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages]);
 
-  const quickChatOptions = [
-    { icon: CreditCard, label: "Syarat buat KTP", message: "Apa syarat pembuatan KTP?" },
-    { icon: Users, label: "Kartu Keluarga", message: "Apa syarat Kartu Keluarga yang baru?" },
-    { icon: FileText, label: "Akta Kelahiran", message: "Bagaimana prosedur membuat akta kelahiran" },
-    { icon: MapPin, label: "Lokasi Kantor", message: "Dimana lokasi kantor Disdukcapil Anambas?" }
-  ];
+
+  // Load messages if sessionId changes
+  useEffect(() => {
+    const loadMessages = async () => {
+      if (sessionId) {
+        setIsLoading(true);
+        try {
+          const history = await api.getSessionMessages(sessionId);
+          setMessages(history.map(m => ({
+            role: m.role,
+            content: m.content,
+            timestamp: new Date(m.created_at)
+          })));
+        } catch (error) {
+          console.error("Failed to load messages:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // Clear messages for new chat
+        setMessages([]);
+      }
+    };
+    loadMessages();
+  }, [sessionId]);
 
   const handleSend = async (text?: string) => {
     const content = typeof text === "string" ? text : input;
@@ -55,20 +87,21 @@ export const ChatInterface = () => {
       content: content,
       timestamp: new Date()
     };
+
+    // Optimistic update
     setMessages((prev) => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      // Format history for API
-      const history = messages.map(msg => ({
-        role: msg.role,
-        content: msg.content
-      }));
-
-      const data = await sendMessage(userMessage.content, history);
+      const data = await api.sendMessage(userMessage.content, sessionId);
       const endTime = Date.now();
       const duration = (endTime - startTime) / 1000;
+
+      // Notify parent if new session was created
+      if (!sessionId && onSessionCreated) {
+        onSessionCreated(String(data.session_id));
+      }
 
       const aiResponse: Message = {
         role: "assistant",
@@ -81,7 +114,7 @@ export const ChatInterface = () => {
       console.error("Failed to send message:", error);
       const errorResponse: Message = {
         role: "assistant",
-        content: "Maaf, terjadi kesalahan saat menghubungi server.",
+        content: "Maaf, terjadi kesalahan saat menghubungi server. Pastikan Anda sudah login.",
         timestamp: new Date()
       };
       setMessages((prev) => [...prev, errorResponse]);
@@ -127,9 +160,9 @@ export const ChatInterface = () => {
     <motion.div
       layout
       transition={{ duration: 0.8, ease: "easeInOut" }}
-      className={`flex flex-col h-full overflow-hidden ${messages.length === 0 ? "justify-between lg:justify-center" : "justify-between"}`}
+      className={`flex flex-col h-full overflow-hidden ${messages.every(m => m.role !== 'user') ? "justify-between lg:justify-center" : "justify-between"}`}
     >
-      {messages.length === 0 ? (
+      {messages.every(m => m.role !== 'user') ? (
         <div className="w-full px-4 flex-1 flex flex-col justify-center lg:flex-none">
           <AnimatedContent
             distance={20}
@@ -142,19 +175,25 @@ export const ChatInterface = () => {
             threshold={0.1}
             className="flex flex-col items-center gap-8 p-4"
           >
-            <div className="">
-              <GradientText className="lg:text-4xl bg-white/60 backdrop-blur-sm text-xl text-center font-black">Disdukcapil Kepulauan Anambas</GradientText>
+            <div className="flex flex-col items-center">
+              <GradientText
+                showBorder={false}
+                className="lg:text-4xl text-3xl font-black bg-white/20 backdrop-blur-xl px-8 py-4 rounded-[40px] border border-white/50 shadow-2xl transition-all duration-700"
+              >
+                Disdukcapil Kepulauan Anambas
+              </GradientText>
+
             </div>
 
             <div className="flex flex-wrap gap-2 justify-center w-full max-w-2xl px-4">
               {quickChatOptions.map((option, index) => (
                 <button
                   key={index}
-                  className="flex bg-gray-50/50 backdrop-blur-sm items-center gap-2 px-4 py-2.5 border border-gray-50 hover:border-primary rounded-full text-sm text-foreground hover:bg-primary hover:text-primary-foreground transition-all shadow-sm hover:scale-105 active:scale-95"
+                  className="flex bg-white/10 backdrop-blur-xl items-center gap-2 px-5 py-3 border border-white/20 hover:border-white/40 rounded-full text-sm text-white/90 hover:bg-white/20 hover:text-white transition-all shadow-lg hover:scale-105 active:scale-95 group"
                   onClick={() => handleSend(option.message)}
                 >
-                  <option.icon size={16} />
-                  <span className="whitespace-nowrap text-xs">{option.label}</span>
+                  <option.icon size={16} className="text-white/60 group-hover:text-white" />
+                  <span className="whitespace-nowrap text-xs font-medium">{option.label}</span>
                 </button>
               ))}
             </div>
@@ -164,80 +203,80 @@ export const ChatInterface = () => {
         <ScrollArea className="flex-1 min-h-0">
           <div className="space-y-4 p-4 lg:p-0 mx-auto max-w-5xl">
             {messages.map((message, index) => (
-              <div
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 key={index}
-                className={`flex flex-col ${message.role === "user" ? "items-end" : "items-start"}`}
+                className={`flex gap-3 ${message.role === "user" ? "flex-row-reverse" : "flex-row"}`}
               >
-                <div
-                  className={cn(
-                    "max-w-[80%] backdrop-blur-sm relative group",
-                    "prose prose-sm bg-gray-50/50  max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
-                    message.role === "user"
-                      ? "bg-primary/70 rounded-b-3xl rounded-tl-3xl rounded-tr-[3px] text-primary-foreground prose-invert dark:prose"
-                      : "rounded-b-3xl rounded-tr-3xl rounded-tl-[3px]"
-                  )}
-                >
-                  <div className="px-3">
+                <div className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                  message.role === "user" ? "bg-primary text-primary-foreground" : "bg-white/80 text-primary border border-primary/20"
+                )}>
+                  {message.role === "user" ? <UserIcon size={16} /> : <Bot size={16} />}
+                </div>
+
+                <div className={`flex flex-col max-w-[85%] lg:max-w-[70%] ${message.role === "user" ? "items-end" : "items-start"}`}>
+                  <div
+                    className={cn(
+                      "px-4 py-3 shadow-md relative group transition-all duration-300",
+                      "prose prose-sm max-w-none break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+                      message.role === "user"
+                        ? "bg-primary/90 text-primary-foreground rounded-2xl rounded-tr-none border-0 backdrop-blur-md"
+                        : "bg-white/70 text-foreground rounded-2xl rounded-tl-none border border-white/40 backdrop-blur-xl"
+                    )}
+                  >
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
                       {message.content}
                     </ReactMarkdown>
-                  </div>
 
-
-                  <div className="flex items-center px-3 py-1 border-t-black/20 border-t gap-2 mt-1">
-                    <span className={cn("text-[12px] text-black text-muted-foreground", message.role === "user" ? "text-primary-foreground" : "")}>
-                      {formatTime(message.timestamp)}
-                    </span>
-                    {message.responseTime && (
-                      <span className={cn("text-[12px] text-black text-muted-foreground", message.role === "user" ? "text-primary-foreground" : "")}>
-                        • {message.responseTime.toFixed(2)}s
-                      </span>
-                    )}
-
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            type="button"
-                            className="h-6 w-6"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              copyToClipboard(message.content, index);
-                            }}
-                          >
-                            {copiedIndex === index ? (
-                              <Check className="h-3 w-3 text-green-500" />
-                            ) : (
-                              <Copy className="h-3 w-3" />
-                            )}
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Salin teks</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
+                    <div className={cn(
+                      "flex items-center gap-2 mt-2 pt-2 border-t text-[10px] opacity-60",
+                      message.role === "user" ? "border-white/20" : "border-black/5"
+                    )}>
+                      <span>{formatTime(message.timestamp)}</span>
+                      {message.responseTime && (
+                        <span>• {message.responseTime.toFixed(2)}s</span>
+                      )}
+                      <div className="flex-1" />
+                      <button
+                        onClick={() => copyToClipboard(message.content, index)}
+                        className="hover:scale-110 active:scale-95 transition-transform"
+                      >
+                        {copiedIndex === index ? (
+                          <Check className="h-3 w-3 text-green-500" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
             {isLoading && (
-              <div className="flex justify-start">
-                <div className="rounded-2xl px-4 py-3 bg-card/60 backdrop-blur-sm">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex gap-3 items-center"
+              >
+                <div className="w-8 h-8 rounded-full bg-white/80 border border-primary/20 flex items-center justify-center shrink-0">
+                  <Bot size={16} className="text-primary" />
                 </div>
-              </div>
+                <div className="rounded-2xl px-4 py-4 bg-white/50 backdrop-blur-sm border border-white/40 shadow-sm flex gap-1">
+                  <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1 }} className="w-1 h-1 bg-primary rounded-full"></motion.span>
+                  <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.2 }} className="w-1 h-1 bg-primary rounded-full"></motion.span>
+                  <motion.span animate={{ opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 1, delay: 0.4 }} className="w-1 h-1 bg-primary rounded-full"></motion.span>
+                </div>
+              </motion.div>
             )}
-            <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} className="h-4" />
           </div>
         </ScrollArea>
       )}
       <motion.div layout className="p-4 z-20 shrink-0">
         <div className="max-w-2xl mx-auto flex flex-col gap-2">
-          <div className="relative group bg-gray-50/50 backdrop-blur-md rounded-3xl shadow-lg transition-all duration-300 ring-0 focus-within:ring-0">
+          <div className="relative group bg-white/10 backdrop-blur-xl rounded-[32px] border border-white/20 shadow-2xl transition-all duration-300">
             <Textarea
               ref={textareaRef}
               value={input}
@@ -249,7 +288,7 @@ export const ChatInterface = () => {
                 }
               }}
               placeholder="Ketik pesan Anda..."
-              className="w-full text-base md:text-sm resize-none bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-0 p-4 pr-14 min-h-[60px] max-h-[200px] placeholder:text-muted-foreground/50 shadow-none"
+              className="w-full text-base md:text-sm resize-none bg-transparent border-0 outline-none ring-0 focus:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus:border-0 p-5 pr-14 min-h-[64px] max-h-[200px] text-white placeholder:text-white/40 shadow-none selection:bg-primary/30"
               disabled={isLoading}
             />
             <div className="absolute bottom-2 right-2">

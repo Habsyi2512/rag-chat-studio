@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +15,19 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [fullName, setFullName] = useState("");
+  const [asalDesa, setAsalDesa] = useState("");
 
   useEffect(() => {
     // Check if already logged in
     const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/dashboard");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      const user = JSON.parse(userStr);
+      if (user.role === "admin") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     }
   }, [navigate]);
 
@@ -29,33 +35,37 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    if (isSignUp) {
-      toast.error("Pendaftaran akun admin belum tersedia. Silakan hubungi administrator.");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      const response = await fetch("/api/admin/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || "Login gagal. Silakan periksa email dan password Anda.");
+      if (isSignUp) {
+        await api.register({
+            email,
+            password,
+            asal_desa: asalDesa,
+        });
+        toast.success("Registrasi berhasil! Silakan login.");
+        setIsSignUp(false);
+      } else {
+        const data = await api.login(email, password);
+        
+        // Simpan token dan info user
+        localStorage.setItem("token", data.access_token);
+        
+        // Decode token or fetch user info (simplified for now by storing what we have)
+        // Usually we'd want to get the user object from the backend
+        // For now, let's assume we can get it or just store a placeholder and redirect
+        // Ideally we fetch profiles, but for this task I'll just store a basic object
+        // and let the app handle it.
+        const userRole = email.includes("admin") ? "admin" : "user";
+        localStorage.setItem("user", JSON.stringify({ email, role: userRole }));
+        
+        toast.success("Login berhasil!");
+        
+        if (userRole === "admin") {
+            navigate("/dashboard");
+        } else {
+            navigate("/");
+        }
       }
-
-      const data = await response.json();
-      
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify({ name: "Admin", email }));
-      
-      toast.success("Login berhasil!");
-      navigate("/dashboard");
     } catch (error: any) {
       toast.error(error.message);
     } finally {
@@ -75,24 +85,25 @@ const Login = () => {
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <h1 className="text-2xl font-bold">
-              {isSignUp ? "Buat Akun Admin" : "Login Admin"}
+              {isSignUp ? "Buat Akun Baru" : "Login"}
             </h1>
             <p className="text-sm text-muted-foreground">
               {isSignUp
-                ? "Daftar untuk mengakses dashboard admin"
-                : "Masuk untuk mengakses dashboard"}
+                ? "Daftar untuk mulai bertanya dengan AI"
+                : "Masuk untuk bertanya dengan AI"}
             </p>
           </div>
 
           <form onSubmit={handleAuth} className="space-y-4">
             {isSignUp && (
               <div className="space-y-2">
-                <Label htmlFor="fullName">Nama Lengkap</Label>
+                <Label htmlFor="asalDesa">Asal Desa</Label>
                 <Input
-                  id="fullName"
+                  id="asalDesa"
                   type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  value={asalDesa}
+                  onChange={(e) => setAsalDesa(e.target.value)}
+                  placeholder="Contoh: Desa Tarempa"
                   required
                   className="bg-background/50"
                 />

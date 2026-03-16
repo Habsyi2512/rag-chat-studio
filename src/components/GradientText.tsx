@@ -1,5 +1,6 @@
 import './GradientText.css';
 import React, { ReactNode } from 'react';
+import { cn } from "@/lib/utils";
 
 interface GradientTextProps {
   children: ReactNode;
@@ -12,7 +13,7 @@ interface GradientTextProps {
 export default function GradientText({
   children,
   className = '',
-  colors = ["#00ccff", "#009a00", "#00ccff", "#0066ff"],
+  colors = ["#38bdf8", "#818cf8", "#c084fc", "#fb7185", "#38bdf8"],
   animationSpeed = 8,
   showBorder = false
 }: GradientTextProps) {
@@ -22,10 +23,14 @@ export default function GradientText({
   };
 
   return (
-    <div className={`animated-gradient-text mb-2 ${className}`}>
-      {showBorder && <div className="gradient-overlay" style={gradientStyle}></div>}
-      <div className={`text-content p-2 ${showBorder ? 'backdrop-blur-sm' : ''}`} style={gradientStyle}>
-        {children}
+    <div className={cn("animated-gradient-text", className)}>
+      <div 
+        className="text-content select-none" 
+        style={gradientStyle}
+      >
+        <span className="drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]">
+          {children}
+        </span>
       </div>
     </div>
   );
