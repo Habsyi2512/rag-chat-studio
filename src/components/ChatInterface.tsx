@@ -62,7 +62,8 @@ export const ChatInterface = ({
           setMessages(history.map(m => ({
             role: m.role,
             content: m.content,
-            timestamp: new Date(m.created_at)
+            timestamp: new Date(m.created_at),
+            responseTime: m.response_time
           })));
         } catch (error) {
           console.error("Failed to load messages:", error);
@@ -107,7 +108,7 @@ export const ChatInterface = ({
         role: "assistant",
         content: data.response,
         timestamp: new Date(),
-        responseTime: duration
+        responseTime: data.response_time
       };
       setMessages((prev) => [...prev, aiResponse]);
     } catch (error) {
@@ -234,13 +235,18 @@ export const ChatInterface = ({
                     </ReactMarkdown>
 
                     <div className={cn(
-                      "flex items-center gap-2 mt-2 pt-1 text-[10px] opacity-50",
-                      message.role === "user" ? "text-primary-foreground/80" : "text-white/90"
+                      "flex items-center gap-2 mt-3 pt-2 text-[10px] border-t border-white/10",
+                      message.role === "user" ? "text-primary-foreground/80 opacity-70" : "text-white/80"
                     )}>
-                      <span>{formatTime(message.timestamp)}</span>
-                      {message.responseTime && (
-                        <span>• {message.responseTime.toFixed(2)}s</span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        <span>{formatTime(message.timestamp)}</span>
+                        {message.responseTime != null && (
+                          <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-white font-bold border border-white/20">
+                            <Bot size={10} />
+                            <span>Waktu respon: {Number(message.responseTime).toFixed(2)}s</span>
+                          </div>
+                        )}
+                      </div>
                       <div className="flex-1" />
                       <button
                         onClick={() => copyToClipboard(message.content, index)}

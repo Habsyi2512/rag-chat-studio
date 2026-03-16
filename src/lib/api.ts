@@ -28,6 +28,7 @@ export interface ChatMessage {
   content: string;
   session_id: string; // Added/Updated to string
   retrieved_docs?: string[];
+  response_time?: number;
   created_at: string;
 }
 
@@ -37,6 +38,7 @@ export interface ChatResponse {
   intent: string;
   category: string;
   retrieved_docs?: string[];
+  response_time?: number;
 }
 
 const baseUrl = "/api";
