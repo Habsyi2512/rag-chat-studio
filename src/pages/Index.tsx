@@ -86,8 +86,8 @@ const Index = () => {
               >
                 {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
               </Button>
-              <h1 className="text-lg md:text-xl font-black bg-gradient-to-r from-[#38bdf8] via-[#818cf8] to-[#c084fc] bg-clip-text text-transparent drop-shadow-sm tracking-tight animate-gradient-x">
-                Anambas AI Chat
+              <h1 className="text-lg md:text-xl font-black text-blue-600">
+                RAG Chatbot
               </h1>
             </div>
 
