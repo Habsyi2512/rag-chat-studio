@@ -38,18 +38,18 @@ const Login = () => {
     try {
       if (isSignUp) {
         await api.register({
-            email,
-            password,
-            asal_desa: asalDesa,
+          email,
+          password,
+          asal_desa: asalDesa,
         });
         toast.success("Registrasi berhasil! Silakan login.");
         setIsSignUp(false);
       } else {
         const data = await api.login(email, password);
-        
+
         // Simpan token dan info user
         localStorage.setItem("token", data.access_token);
-        
+
         // Decode token or fetch user info (simplified for now by storing what we have)
         // Usually we'd want to get the user object from the backend
         // For now, let's assume we can get it or just store a placeholder and redirect
@@ -57,13 +57,13 @@ const Login = () => {
         // and let the app handle it.
         const userRole = email.includes("admin") ? "admin" : "user";
         localStorage.setItem("user", JSON.stringify({ email, role: userRole }));
-        
+
         toast.success("Login berhasil!");
-        
+
         if (userRole === "admin") {
-            navigate("/dashboard");
+          navigate("/dashboard");
         } else {
-            navigate("/");
+          navigate("/");
         }
       }
     } catch (error: any) {
@@ -103,7 +103,7 @@ const Login = () => {
                   type="text"
                   value={asalDesa}
                   onChange={(e) => setAsalDesa(e.target.value)}
-                  placeholder="Contoh: Desa Tarempa"
+                  placeholder="Contoh: Tarempa Barat"
                   required
                   className="bg-background/50"
                 />
