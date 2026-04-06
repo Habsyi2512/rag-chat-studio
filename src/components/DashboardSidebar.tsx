@@ -1,7 +1,6 @@
 import { Home, MessageCircle, FileText, FileCheck, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -11,12 +10,12 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
+  SidebarFooter,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-
 import { cn } from "@/lib/utils";
 
 const menuItems = [
@@ -39,53 +38,63 @@ export const DashboardSidebar = () => {
   };
 
   return (
-    <Sidebar 
-      className={cn(
-        "fixed left-4 top-4 bottom-4 h-[calc(100vh-2rem)] rounded-[32px] border border-white/50 bg-white/40 backdrop-blur-2xl shadow-2xl transition-all duration-500 ease-in-out z-50",
-        "[[data-sidebar=sidebar]]:bg-transparent [&>div]:bg-transparent",
-        collapsed ? "w-20" : "w-72"
-      )} 
-      collapsible="icon"
-    >
-      <SidebarTrigger className="m-2 self-end" />
-      <SidebarContent className="bg-transparent">
-        <SidebarGroup className="bg-transparent">
-          <SidebarGroupLabel className={cn("px-4 py-6 text-slate-950 font-black tracking-[0.2em] text-[10px] uppercase opacity-100", collapsed && "hidden")}>
-            Menu Admin
+    <Sidebar variant="sidebar" collapsible="icon" className="border-r border-slate-200 bg-white">
+      <SidebarHeader className="p-4 border-b border-slate-100 mb-2 min-h-[64px] flex flex-row items-center justify-between">
+        <div className={cn("flex items-center gap-3 overflow-hidden", collapsed ? "hidden" : "w-full")}>
+          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-sm">A</span>
+          </div>
+          <div className="flex flex-col">
+            <span className="font-bold text-slate-800 text-sm tracking-tight">Admin Panel</span>
+            <span className="text-[10px] text-slate-500 uppercase tracking-widest font-semibold">Disdukcapil</span>
+          </div>
+        </div>
+        <SidebarTrigger className={cn("shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-800", collapsed ? "mx-auto" : "")} />
+      </SidebarHeader>
+
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupLabel className={cn("text-xs font-semibold text-slate-400 mb-2 transition-all", collapsed && "opacity-0 invisible")}>
+            Main Menu
           </SidebarGroupLabel>
-          <SidebarGroupContent className="bg-transparent">
-            <SidebarMenu className="bg-transparent">
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-1.5 px-2">
               {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title} className="px-2">
+                <SidebarMenuItem key={item.title}>
                   <NavLink
                     to={item.url}
                     end
-                    className="hover:bg-white/60 flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 text-slate-900 font-bold hover:text-primary group border border-transparent hover:border-white/40"
-                    activeClassName="bg-white/70 shadow-xl shadow-white/10 border-white/40 text-primary font-black"
+                    title={collapsed ? item.title : undefined}
+                    className={cn(
+                      "flex items-center rounded-lg text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-colors font-medium border border-transparent group overflow-hidden",
+                      collapsed ? "justify-center w-10 h-10 mx-auto px-0" : "gap-3 px-3 py-2.5"
+                    )}
+                    activeClassName="bg-blue-50 text-blue-700 font-semibold border-blue-100 shadow-sm"
                   >
-                    <item.icon className={cn("h-5 w-5 transition-transform group-hover:scale-110 text-slate-900 group-hover:text-primary")} />
-                    {!collapsed && <span className="tracking-tight">{item.title}</span>}
+                    <item.icon className="h-4 w-4 shrink-0" />
+                    {!collapsed && <span>{item.title}</span>}
                   </NavLink>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <div className="mt-auto p-4">
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className={cn(
-              "w-full rounded-2xl transition-all duration-300 gap-2",
-              "bg-white/10 hover:bg-destructive/20 hover:text-destructive",
-              collapsed ? "justify-center px-0" : "justify-start px-4"
-            )}
-          >
-            <LogOut className="h-5 w-5" />
-            {!collapsed && "Logout"}
-          </Button>
-        </div>
       </SidebarContent>
+
+      <SidebarFooter className="p-4 border-t border-slate-100">
+        <Button
+          onClick={handleLogout}
+          variant="ghost"
+          className={cn(
+            "w-full text-slate-500 hover:text-red-600 hover:bg-red-50 gap-2 h-10 overflow-hidden",
+            collapsed ? "justify-center px-0 w-10 mx-auto" : "justify-start px-3"
+          )}
+          title={collapsed ? "Logout" : undefined}
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          {!collapsed && "Logout"}
+        </Button>
+      </SidebarFooter>
     </Sidebar>
   );
 };
