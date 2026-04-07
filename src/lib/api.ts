@@ -109,6 +109,25 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch all chats");
     return res.json();
   },
+
+  updateSession: async (sessionId: string, title: string): Promise<ChatSession> => {
+    const res = await fetch(`${baseUrl}/chat/session/${sessionId}`, {
+      method: "PUT",
+      headers: getHeaders(),
+      body: JSON.stringify({ title }),
+    });
+    if (!res.ok) throw new Error("Failed to update session");
+    return res.json();
+  },
+
+  deleteSession: async (sessionId: string): Promise<{ status: string }> => {
+    const res = await fetch(`${baseUrl}/chat/session/${sessionId}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+    if (!res.ok) throw new Error("Failed to delete session");
+    return res.json();
+  },
 };
 
 // Backward compatibility for existing code

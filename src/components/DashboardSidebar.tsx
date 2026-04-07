@@ -1,4 +1,4 @@
-import { Home, MessageCircle, FileText, FileCheck, LogOut } from "lucide-react";
+import { Home, MessageCircle, FileText, FileCheck, LogOut, AlertCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +17,17 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const menuItems = [
   { title: "Dashboard", icon: Home, url: "/dashboard" },
@@ -82,18 +93,45 @@ export const DashboardSidebar = () => {
       </SidebarContent>
 
       <SidebarFooter className="p-4 border-t border-slate-100">
-        <Button
-          onClick={handleLogout}
-          variant="ghost"
-          className={cn(
-            "w-full text-slate-500 hover:text-red-600 hover:bg-red-50 gap-2 h-10 overflow-hidden",
-            collapsed ? "justify-center px-0 w-10 mx-auto" : "justify-start px-3"
-          )}
-          title={collapsed ? "Logout" : undefined}
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && "Logout"}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              variant="ghost"
+              className={cn(
+                "w-full text-slate-500 hover:text-red-600 hover:bg-red-50 gap-2 h-10 overflow-hidden",
+                collapsed ? "justify-center px-0 w-10 mx-auto" : "justify-start px-3"
+              )}
+              title={collapsed ? "Logout" : undefined}
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              {!collapsed && "Logout"}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="rounded-2xl border-slate-200 bg-white">
+            <AlertDialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-3 bg-red-50 rounded-xl">
+                  <AlertCircle className="h-6 w-6 text-red-600" />
+                </div>
+                <AlertDialogTitle className="text-xl font-bold text-slate-800">Konfirmasi Logout</AlertDialogTitle>
+              </div>
+              <AlertDialogDescription className="text-slate-500 text-base">
+                Apakah Anda yakin ingin keluar dari Admin Panel? Perubahan yang belum disimpan mungkin akan hilang.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="gap-3 mt-6">
+              <AlertDialogCancel className="rounded-xl border-slate-200 text-slate-600 hover:bg-slate-50 h-11 px-6">
+                Batal
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleLogout}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-11 px-8 shadow-lg shadow-red-100"
+              >
+                Logout
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </SidebarFooter>
     </Sidebar>
   );
