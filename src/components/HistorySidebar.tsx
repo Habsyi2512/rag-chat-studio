@@ -112,7 +112,7 @@ export const HistorySidebar = ({
   };
 
   return (
-    <div className="m-4 h-[calc(100vh-2rem)] w-80 lg:w-[350px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-[32px] shadow-2xl flex flex-col z-20 transition-all duration-300 overflow-hidden">
+    <div className="m-2 lg:m-4 h-[calc(100vh-1rem)] lg:h-[calc(100vh-2rem)] w-[280px] sm:w-80 lg:w-[350px] bg-white/10 backdrop-blur-xl border border-white/20 rounded-[24px] lg:rounded-[32px] shadow-2xl flex flex-col z-20 transition-all duration-300 overflow-hidden">
       <div className="p-4 flex  flex-col gap-4">
         <Button
           onClick={onNewChat}

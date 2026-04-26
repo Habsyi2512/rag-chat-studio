@@ -179,7 +179,7 @@ export const ChatInterface = ({
             <div className="flex flex-col items-center">
               <GradientText
                 showBorder={false}
-                className="lg:text-4xl text-3xl font-black bg-white/20 backdrop-blur-xl px-8 py-2 rounded-[40px] border border-white/50 shadow-2xl transition-all duration-700"
+                className="lg:text-4xl text-center text-xl font-black bg-white/20 backdrop-blur-xl px-8 py-2 rounded-[40px] border border-white/50 shadow-2xl transition-all duration-700"
               >
                 Disdukcapil Kepulauan Anambas
               </GradientText>

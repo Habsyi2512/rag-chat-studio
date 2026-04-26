@@ -7,7 +7,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const sessionId = searchParams.get("s") || undefined;
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 1024);
 
   const token = localStorage.getItem("token");
 
